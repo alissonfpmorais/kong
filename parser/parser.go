@@ -178,6 +178,23 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	leftExp := prefix()
 
+	// p.peekPrecedence() 	-> left binding power
+	// precedence 					-> right binding power
+	//
+	//
+	// Some examples for clarification:
+	//
+	// In the following expression: 1 + 2 * 3, if `*` takes precedence over `+`, then
+	// left binding power 	-> (1 + (2 * 3)), `*` left bind `2`
+	// 																<- `*` left binding
+	// Now, if `+` takes precedence over `*`, then
+	// right binding power 	-> ((1 + 2) * 3), `+` right bind `2`
+	// 														 -> `+` right binding
+	//
+	// Left associative operators are those that when parsing in a row, nests on the left side
+	// Ex: ((1 + 2) + 3)
+	// Right associative operators are those that when parsing in a row, nests on the right side
+	// Ex: (1 + (2 + 3))
 	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
 		infix := p.infixParserFns[p.peekToken.Type]
 
