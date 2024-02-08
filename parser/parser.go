@@ -56,6 +56,8 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.prefixParserFns = make(map[token.TokenType]prefixParserFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	p.registerPrefix(token.TRUE, p.parseBoolean)
+	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
@@ -194,7 +196,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	// Left associative operators are those that when parsing in a row, nests on the left side
 	// Ex: ((1 + 2) + 3)
 	// Right associative operators are those that when parsing in a row, nests on the right side
-	// Ex: (1 + (2 + 3))
+	// Ex: (1 + (2 + 3))it
 	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
 		infix := p.infixParserFns[p.peekToken.Type]
 
@@ -212,6 +214,10 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+func (p *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
